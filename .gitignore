@@ -30,6 +30,9 @@
 *.i*86
 *.x86_64
 *.hex
+crc32combine
+crc32trim-leading
+crc32trim-trailing
 
 # Debug files
 *.dSYM/
