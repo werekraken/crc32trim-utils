@@ -132,7 +132,9 @@ int main(int argc, char **argv) {
           program_basename,
           badopt
         );
-        free(badopt);
+        if (optopt) {
+          free(badopt);
+        }
         usage_short();
         return EXIT_FAIL_OPTION;
     }
