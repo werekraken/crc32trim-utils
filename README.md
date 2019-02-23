@@ -2,9 +2,9 @@
 
 `crc32combine` wraps _[zlib's](https://github.com/madler/zlib)_ `crc32combine()` providing functionality to combine two or more crcs of streams when the lengths of all streams, but the first, are known.
 
-`crc32trim-trailing` wraps _[libcrc32trim's](https://github.com/werekraken/libcrc32trim)_ `crc32_trim_trailing` providing functionality to trim one or more crcs of streams from the end of a combined crc when the lengths of all streams, but the first, are known.
+`crc32trim-trailing` wraps _[libcrc32trim's](https://github.com/werekraken/libcrc32trim)_ `crc32_trim_trailing()` providing functionality to trim one or more crcs of streams from the end of a combined crc when the lengths of all streams, but the first, are known.
 
-`crc32trim-leading` wraps _[libcrc32trim's](https://github.com/werekraken/libcrc32trim)_ `crc32_trim_leading` providing functionality to trim one or more crcs of streams from the front of a combined crc when the lengths of all streams, but the first, are known.
+`crc32trim-leading` wraps _[libcrc32trim's](https://github.com/werekraken/libcrc32trim)_ `crc32_trim_leading()` providing functionality to trim one or more crcs of streams from the front of a combined crc when the lengths of all streams, but the first, are known.
 
 ## Usage
 
