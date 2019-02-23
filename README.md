@@ -96,4 +96,5 @@ d9583520
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## License
-crc32trim-utils is available as open source under the terms of the [zlib license](LICENSE).
+
+_crc32trim-utils_ is available as open source under the terms of the [zlib license](LICENSE).
