@@ -37,3 +37,6 @@ crc32trim-trailing
 # Debug files
 *.dSYM/
 *.su
+
+# Vagrant
+/.vagrant/
