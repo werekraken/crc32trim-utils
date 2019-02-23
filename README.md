@@ -65,6 +65,32 @@ $ ./crc32trim-leading --split-lengths 0787c864 feee8227 4 a8539d8c 5 d9583520 7
 9d293438
 ```
 
+### Cooperative usage
+
+```
+$ for i in this that other another; do echo "`crc32 <(echo -n "$i")` $i"; done
+feee8227 this
+a8539d8c that
+d9583520 other
+9d293438 another
+```
+```
+$ crc32 <(echo -n "thisthatotheranother")
+0787c864
+```
+```
+$ ./crc32trim-leading `./crc32trim-trailing 0787c864 9d293438 7 d9583520 5` feee8227 4
+a8539d8c
+```
+```
+$ ./crc32trim-leading `./crc32trim-trailing 0787c864 9d293438 7` feee8227 9 a8539d8c 5
+d9583520
+```
+```
+$ ./crc32trim-leading --split-lengths `./crc32trim-trailing 0787c864 9d293438 7` feee8227 4 a8539d8c 5
+d9583520
+```
+
 ## Versioning
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
