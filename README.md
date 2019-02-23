@@ -49,10 +49,6 @@ $ crc32 <(echo -n "thisthatotheranother")
 0787c864
 ```
 ```
-$ ./crc32combine feee8227 a8539d8c 4 d9583520 5 9d293438 6
-8c66deb9
-```
-```
 $ ./crc32combine feee8227 a8539d8c 4 d9583520 5 9d293438 7
 0787c864
 ```
