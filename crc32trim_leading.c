@@ -11,11 +11,12 @@
 
 #include <crc32trim.h> // for crc32_trim_leading()
 #include <getopt.h>    // for getopt_long(), optind, option, optopt
+#include <stdbool.h>   // for bool, false, true
 #include <stdio.h>     // for fprintf(), NULL, printf(), puts(), stderr,
                        //     sprintf()
 #include <stdlib.h>    // for free(), malloc(), strtol(), strtoul()
 #include <string.h>    // for GNU basename()
-#include <zlib.h>      // for crc32(), Z_NULL
+#include <zlib.h>      // for crc32(), crc32combine(), Z_NULL
 
 #define EXIT_OK          0
 #define EXIT_FAIL        1
@@ -27,8 +28,9 @@
 #define MAX_SHORT_BADOPT_LENGTH 2
 
 static const struct option long_options[] = {
-  {"help",    no_argument, NULL, 'h'},
-  {"version", no_argument, NULL, 'V'},
+  {"help",          no_argument, NULL, 'h'},
+  {"split-lengths", no_argument, NULL, 's'},
+  {"version",       no_argument, NULL, 'V'},
   {0, 0, NULL, 0}
 };
 
@@ -44,6 +46,12 @@ static void usage(void) {
   puts(
     "Options:\n"
     "  -h, [--help]                 # Display this help and exit.\n"
+    "  -s, [--split-lengths]        # When trimming recursively, the default length\n"
+    "                               #   syntax can be a bit awkward (e.g. crcABC\n"
+    "                               #   crcA lenBC crcB lenC), but is proper. This\n"
+    "                               #   option provides an alternative which may be\n"
+    "                               #   more friendly in some cases (e.g. crcABC\n"
+    "                               #   crcA lenB crcB lenC).\n"
     "  -V, [--version]              # Display the version and exit.\n"
   );
 }
@@ -61,17 +69,22 @@ int main(int argc, char **argv) {
 
   int c;
   char *badopt = NULL;
+  bool split_lengths = false;
 
   /*
    * optstring must start with ":" so ':' is returned for a missing option
    * argument. Otherwise '?' is returned for both invalid option and missing
    * option argument.
    */
-  while ((c = getopt_long(argc, argv, ":hV", long_options, 0)) != -1) {
+  while ((c = getopt_long(argc, argv, ":hsV", long_options, 0)) != -1) {
     switch (c) {
       case 'h':
         usage();
         return EXIT_OK;
+
+      case 's':
+        split_lengths = true;
+        break;
 
       case 'V':
         printf("%s version %s\n", program_basename, CRC32TRIM_UTILS_VERSION);
@@ -169,7 +182,10 @@ int main(int argc, char **argv) {
   }
   optind++;
 
-  for (; optind < argc; optind++) {
+  if (split_lengths) {
+    /*
+     * Combine all to-be-trimmed leading crcs into crcA.
+     */
     crcA = strtoul(argv[optind], &endptr, BASE_SIXTEEN);
     if (*endptr) {
       fprintf(
@@ -183,6 +199,49 @@ int main(int argc, char **argv) {
     }
     optind++;
 
+    /*
+     * This is just our crcB for the combine operations, not the final crcB.
+     */
+    unsigned long crcB = crc32(0L, Z_NULL, 0);
+
+    for (; optind + 1 < argc; optind++) {
+      /*
+       * Associated lengths are first.
+       */
+      lenB = strtol(argv[optind], &endptr, BASE_TEN);
+      if (*endptr) {
+        fprintf(
+          stderr,
+          "%s: Invalid length '%s'.\n",
+          program_basename,
+          argv[optind]
+        );
+        usage_short();
+        return EXIT_FAIL_OPTION;
+      }
+      optind++;
+
+      crcB = strtoul(argv[optind], &endptr, BASE_SIXTEEN);
+      if (*endptr) {
+        fprintf(
+          stderr,
+          "%s: Invalid crc32 '%s'.\n",
+          program_basename,
+          argv[optind]
+        );
+        usage_short();
+        return EXIT_FAIL_OPTION;
+      }
+
+      /*
+       * crcA ends up holding crcAB for the combine operations.
+       */
+      crcA = crc32_combine(crcA, crcB, lenB);
+    }
+
+    /*
+     * We have one final length to collect.
+     */
     lenB = strtol(argv[optind], &endptr, BASE_TEN);
     if (*endptr) {
       fprintf(
@@ -195,7 +254,39 @@ int main(int argc, char **argv) {
       return EXIT_FAIL_OPTION;
     }
 
+    /*
+     * Now we can do our trim leading.
+     */
     crcAB = crc32_trim_leading(crcAB, crcA, lenB);
+  } else {
+    for (; optind < argc; optind++) {
+      crcA = strtoul(argv[optind], &endptr, BASE_SIXTEEN);
+      if (*endptr) {
+        fprintf(
+          stderr,
+          "%s: Invalid crc32 '%s'.\n",
+          program_basename,
+          argv[optind]
+        );
+        usage_short();
+        return EXIT_FAIL_OPTION;
+      }
+      optind++;
+
+      lenB = strtol(argv[optind], &endptr, BASE_TEN);
+      if (*endptr) {
+        fprintf(
+          stderr,
+          "%s: Invalid length '%s'.\n",
+          program_basename,
+          argv[optind]
+        );
+        usage_short();
+        return EXIT_FAIL_OPTION;
+      }
+
+      crcAB = crc32_trim_leading(crcAB, crcA, lenB);
+    }
   }
 
   /*
