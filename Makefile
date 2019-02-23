@@ -14,12 +14,12 @@ all: crc32combine crc32trim-leading crc32trim-trailing
 crc32combine: crc32combine.o
 	$(CC) $(CFLAGS) -o $@ $^ -lz
 
-crc32trim-leading:
-	gcc -Wall -o crc32trim-leading crc32trim_leading.c -lz
+crc32trim-leading: crc32trim_leading.o
+	$(CC) $(CFLAGS) -o $@ $^ -lz -lcrc32trim
 
 crc32trim-trailing: crc32trim_trailing.o
 	$(CC) $(CFLAGS) -o $@ $^ -lz -lcrc32trim
 
 .PHONY: clean
 clean:
-	rm -f crc32combine crc32combine.o crc32trim-leading crc32trim-trailing crc32trim_trailing.o
+	rm -f crc32combine crc32combine.o crc32trim-leading crc32trim_leading.o crc32trim-trailing crc32trim_trailing.o
